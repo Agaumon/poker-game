@@ -5,24 +5,146 @@ numbers = ["Ace", "2", "3", "4", "5", "6", "7", "8", "9", "10", "Jack", "Queen",
 
 deck = []
 
+playerBet = 0
+dealerBet = 0
+playerChips = 500
+dealerChips = 500
+pot = 0
+totalBet = 0
+round = 1
+chip = [1,2]
+
 for suit in suits:
     for number in numbers:
         deck.append(f'{number} of {suit}')
 
 random.shuffle(deck)
 
-print(len(deck))
-
 playerHand = random.sample(deck,2)
 deck = [card for card in deck if card not in playerHand]
 
-dealerHand = random.sample(deck,2)
+dealerHand = random.sample(deck,3)
 deck = [card for card in deck if card not in dealerHand]
 
-gameStatus = input("Play poker? ")
+def rollDice(sides):
+    while True:
+        if sides > 1:
+            return random.randint(1,sides)
+        else:
+            print('Try again. ')
+            break
 
-if gameStatus == "no".upper:
-    exit()
+def call():
+    playerBet = dealerBet
+    print(f'You call {playerBet} chips matching the dealers bet of {dealerBet} chips. ')
+    totalBet = playerBet + dealerBet
+    pot += totalBet
+    totalBet = 0
+    playerBet = 0
+    dealerBet = 0
+    round += 1
 
-else:
-    exit()
+def raiseBet():
+    raiseAsk = input("How much would you like to raise? ")
+    
+    if raiseAsk < playerChips and raiseAsk <= dealerChips:
+        playerBet = raiseAsk
+        print(f'You raised {raiseAsk} chips. ')
+        dealerBet = playerBet
+        print(f'The dealer matches your bet of {dealerBet} chips. ')
+        totalBet = playerBet + dealerBet
+        pot += totalBet
+        dealerBet -= dealerChips
+        playerBet -= playerChips
+        playerBet = 0
+        dealerBet = 0
+        totalBet = 0
+        round += 1
+
+    elif raiseAsk < playerChips and raiseAsk > dealerChips:
+        playerBet = raiseAsk
+        print(f'You raised {raiseAsk} chips. ')
+        dealerBet = dealerChips
+        print(f'The dealer calls {dealerBet} chips. All in.')
+        totalBet = playerBet + dealerBet
+        pot += totalBet
+        playerBet = 0
+        dealerBet = 0
+        totalBet = 0
+        round += 1
+
+    elif raiseAsk > playerChips:
+        print('You do not have enough chips. Please input another amount. ')
+
+def fold():
+    totalBet = dealerBet + playerBet
+    pot += totalBet
+    print('You folded. Dealer wins. ')
+    dealerChips += pot
+    pot = 0
+    totalBet = 0
+    playerBet = 0
+    dealerBet = 0
+
+gamePlay = input("Play poker? ")
+print(f'Your cards are ${playerHand}')
+print(f'Dealer cards: {dealerHand}')
+
+if gamePlay == "yes".upper() and playerChips != 0 and dealerChips != 0:
+    dealerButton = rollDice(3)
+    while round == 1 and dealerButton == 1:
+        dealerBet = random.randrange(0,dealerChips-400,5)
+        pot += dealerBet
+        print(f'The dealer bets {dealerBet} what would you like to do?')
+        dealerBet = 0
+        playerChoice = input("Call, raise, or fold? ")
+        
+        if playerChoice == "call".upper():
+            call()
+            # playerBet = dealerBet
+            # print(f'You call {playerBet} chips matching the dealers bet of {dealerBet} chips. ')
+            # totalBet = playerBet + dealerBet
+            # pot += totalBet
+            # totalBet = 0
+            # playerBet = 0
+            # dealerBet = 0
+            # round += 1
+        
+        while playerChoice == "raise".upper():
+            raiseBet()
+            # raiseAsk = input("How much would you like to raise? ")
+            
+            # if raiseAsk < playerChips and raiseAsk <= dealerChips:
+            #     playerBet = raiseAsk
+            #     print(f'You raised {raiseAsk} chips. ')
+            #     dealerBet = playerBet
+            #     print(f'The dealer matches your bet of {dealerBet} chips. ')
+            #     totalBet = playerBet + dealerBet
+            #     pot += totalBet
+            #     dealerBet -= dealerChips
+            #     playerBet -= playerChips
+            #     playerBet = 0
+            #     dealerBet = 0
+            #     totalBet = 0
+            #     round += 1
+
+            # elif raiseAsk < playerChips and raiseAsk > dealerChips:
+            #     playerBet = raiseAsk
+            #     print(f'You raised {raiseAsk} chips. ')
+            #     dealerBet = dealerChips
+            #     print(f'The dealer calls {dealerBet} chips. All in.')
+            #     totalBet = playerBet + dealerBet
+            #     pot += totalBet
+            #     playerBet = 0
+            #     dealerBet = 0
+            #     totalBet = 0
+            #     round += 1
+
+            # elif raiseAsk > playerChips:
+            #     print('You do not have enough chips. Please input another amount. ')
+
+    while round == 1 and dealerButton == 2:
+        playerBet = random.randrange(0,playerChips-400,5)
+        pot += playerBet
+        print(f'You have the dealer button. You deal {playerBet} chips. ')
+        playerBet = 0
