@@ -80,10 +80,10 @@ def pairBet():
 # Function to ask double down after player card reveal
 def doubleDown():
     global playerChips, pot, anteBet, dealerBet
-    time.sleep(1.5)
-    os.system("clear")
     while True:
-        print(f'Player Hand: {playerHand}')
+        time.sleep(2)
+        os.system("clear")
+        print(f'Player Hand: {str(playerHand)[1:-1]}')
         print()
         print(f'Player Chips: {playerChips}')
         print()
@@ -159,12 +159,21 @@ def checkCards(hand):
     if values[0] == values[1] or values[1] == values[2] or values[0] == values[2]:
         pair = True
 
+# Pair Presentation
     if cardNumbers[0] == cardNumbers[1]:
         pairName = f'{cardNumbers[0]}'
     elif cardNumbers[1] == cardNumbers[2]:
         pairName = f'{cardNumbers[1]}'
     elif cardNumbers[0] == cardNumbers[2]:
         pairName = f'{cardNumbers[2]}'
+
+# High Card Presentation
+    if cardNumbers[0] > cardNumbers[1] or cardNumbers[0] > cardNumbers[2]:
+        highCard = f'{cardNumbers[0]}'
+    elif cardNumbers[1] > cardNumbers[0] or cardNumbers[1] > cardNumbers[2]:
+        highCard = f'{cardNumbers[1]}'
+    elif cardNumbers[2] > cardNumbers[0] or cardNumbers[2] > cardNumbers[1]:
+        highCard = f'{cardNumbers[2]}'
 
     if straight and flush:
         return 6, "Straight Flush", values, "sflush"
@@ -177,7 +186,18 @@ def checkCards(hand):
     elif pair:
         return 2, f'Pair of {pairName}', values, "pair"
     else:
-        return 1, "High Card", values, "high"
+        return 1, f'{highCard}-High', values, "high"
+
+def checkTie(value):
+    if value[0] > value[1] and value[0] > value[2]:
+        highestCard = value[0]
+        return highestCard
+    elif value[1] > value[0] and value[1] > value[2]:
+        highestCard = value[1]
+        return highestCard
+    elif value[2] > value[0] and value[2] > value[1]:
+        highestCard = value[2]
+        return highestCard
 
 # Function to identify and declare a winner
 def gameWin(playerHand, dealerHand):
@@ -186,13 +206,13 @@ def gameWin(playerHand, dealerHand):
     time.sleep(2.5)
     os.system("clear")
 
-    print(f'Length of deck {len(deck)}')
+    # print(f'Length of deck {len(deck)}')
 
     playerRank, playerName, playerVal, pHandRank = checkCards(playerHand)
     dealerRank, dealerName, dealerVal, dHandRank = checkCards(dealerHand)
 
-    playerSum = sum(playerVal)
-    dealerSum = sum(dealerVal)
+    playerHigh = checkTie(playerVal)
+    dealerHigh = checkTie(dealerVal)
 
     print(f'Player has: ', playerName)
     print()
@@ -233,7 +253,7 @@ def gameWin(playerHand, dealerHand):
         time.sleep(5)
     elif playerRank == dealerRank or dealerRank == playerRank:
         while True:
-            if playerSum > dealerSum and pHandRank == "pair":
+            if playerHigh > dealerHigh and pHandRank == "pair":
                 pot += pairSum
                 playerChips += pot
                 print(f'Player wins the {pot} chips pot.')
@@ -245,7 +265,7 @@ def gameWin(playerHand, dealerHand):
                 pairPlus = 0
                 time.sleep(5)
                 break
-            elif playerSum > dealerSum:
+            elif playerHigh > dealerHigh:
                 playerChips += pot
                 print(f'Player wins the {pot} chips pot.')
                 print()
@@ -256,7 +276,7 @@ def gameWin(playerHand, dealerHand):
                 pairPlus = 0
                 time.sleep(5)
                 break
-            elif dealerSum > playerSum:
+            elif dealerHigh > playerHigh:
                 print("Dealer wins.")
                 dealerChips += pot
                 print()
@@ -268,19 +288,15 @@ def gameWin(playerHand, dealerHand):
                 time.sleep(5)
                 break
             else:
-                print("Cannot determine winner.")
+                print("Tie")
+                newPot = pot / 2
+                playerChips += newPot
+                dealerBet = 0
+                anteBet = 0
+                pot = 0
+                pairPlus = 0
                 time.sleep(3)
                 break
-    else:
-        print("Tie")
-        time.sleep(3)
-
-# Assigns cards to player and dealer and removes them from the deck
-playerHand = random.sample(deck,3)
-deck = [card for card in deck if card not in playerHand]
-
-dealerHand = random.sample(deck,3)
-deck = [card for card in deck if card not in dealerHand]
 
 # Confirm player wants to play game to initialize game
 while True:
@@ -290,6 +306,12 @@ while True:
     startGame = input("Would you like to play poker? ").upper()
 
     if startGame == "YES" or startGame == "Y":
+        # Assigns cards to player and dealer and removes them from the deck
+        playerHand = random.sample(deck,3)
+        deck = [card for card in deck if card not in playerHand]
+
+        dealerHand = random.sample(deck,3)
+        deck = [card for card in deck if card not in dealerHand]
         initialBet()
         pairBet()
         doubleDown()
